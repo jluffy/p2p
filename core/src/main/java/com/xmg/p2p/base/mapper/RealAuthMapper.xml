@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.xmg.p2p.base.mapper.RealAuthMapper" >
+  <resultMap id="BaseResultMap" type="com.xmg.p2p.base.domain.RealAuth" >
+    <id column="id" property="id"  />
+	<result column="sex" property="sex"  />
+	<result column="image1" property="image1"  />
+	<result column="image2" property="image2"  />
+	<result column="bornDate" property="bornDate"  />
+	<result column="address" property="address"  />
+	<result column="remark" property="remark"  />
+	<result column="auditTime" property="auditTime"  />
+	<result column="state" property="state"  />
+	<result column="applyTime" property="applyTime"  />
+	<result column="realName" property="realName"  />
+	<result column="idNumber" property="idNumber"  />
+	  <association property="applier" javaType="com.xmg.p2p.base.domain.LoginInfo" columnPrefix="ap_">
+		  <id property="id" column="id"/>
+		  <result property="username" column="username"/>
+	  </association>
+	  <association property="auditor" javaType="com.xmg.p2p.base.domain.LoginInfo" columnPrefix="ad_">
+		  <id property="id" column="id"/>
+		  <result property="username" column="username"/>
+	  </association>
+  </resultMap>
+  <insert id="insert" parameterType="com.xmg.p2p.base.domain.RealAuth" useGeneratedKeys="true" keyProperty="id" >
+    insert into realAuth 
+    (image2,sex,auditor_id,image1,bornDate,address,remark,auditTime,state,applyTime,realName,applier_id,idNumber)
+    values 
+    (#{image2},#{sex},#{auditor.id},#{image1},#{bornDate},#{address},#{remark},#{auditTime},#{state},#{applyTime},#{realName},#{applier.id},#{idNumber})
+  </insert>
+  <update id="updateByPrimaryKey" parameterType="com.xmg.p2p.base.domain.RealAuth" >
+    update realAuth
+    set
+	    image2=#{image2},
+	    sex=#{sex},
+	    auditor_id=#{auditor.id},
+	    image1=#{image1},
+	    bornDate=#{bornDate},
+	    address=#{address},
+	    remark=#{remark},
+	    auditTime=#{auditTime},
+	    state=#{state},
+	    applyTime=#{applyTime},
+	    realName=#{realName},
+	    applier_id=#{applier.id},
+	    idNumber=#{idNumber}
+    where id = #{id}
+  </update>
+  <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="long" >
+    select ra.id,ra.image2,ra.sex,ra.auditor_id,ra.image1,ra.bornDate,ra.address,ra.remark,ra.auditTime,
+	  ra.state,ra.applyTime,ra.realName,ra.applier_id,ra.idNumber,
+	  ap.id ap_id,ap.username ap_username,
+	  ad.id ad_id,ad.username ad_username
+	  from realAuth as ra
+	  left join logininfo as ap
+	  on ra.applier_id =ap.id
+	  left join  logininfo as ad
+	  on ra.auditor_id=ad.id
+	  where ra.id = #{id}
+  </select>
+  <sql id="conditionSql">
+  	<where>
+		<if test="beginDate!=null">
+			and ra.applyTime >=#{beginDate}
+		</if>
+		<if test="endDate!=null">
+			and ra.applyTime &lt;#{endDate}
+		</if>
+		<if test="state>-1">
+			and ra.state=#{state}
+		</if>
+  	</where>
+  </sql>
+  <select id="queryPageCount" resultType="long">
+  	select count(0) from realAuth ra
+  	<include refid="conditionSql"/>
+  </select>
+  <select id="queryPageData" resultMap="BaseResultMap">
+  select ra.id,ra.image2,ra.sex,ra.auditor_id,ra.image1,ra.bornDate,ra.address,ra.remark,ra.auditTime,
+	  ra.state,ra.applyTime,ra.realName,ra.applier_id,ra.idNumber,
+	  ap.id  ap_id,ap.username ap_username,
+	  ad.id ad_id, ad.username ad_username
+	  from realAuth ra
+	  left join logininfo ap
+	  on ra.applier_id= ap.id
+	  left join logininfo ad
+	  on ra.auditor_id=ad.id
+  	<include refid="conditionSql"/>
+  	limit #{start},#{pageSize}
+  </select>
+</mapper>

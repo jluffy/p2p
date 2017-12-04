@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.xmg.p2p.base.mapper.VideoAuthMapper" >
+  <resultMap id="BaseResultMap" type="com.xmg.p2p.base.domain.VideoAuth" >
+    <id column="id" property="id"  />
+	<result column="state" property="state"  />
+	<result column="applyTime" property="applyTime"  />
+	<result column="remark" property="remark"  />
+	<result column="auditTime" property="auditTime"  />
+      <association property="applier" javaType="com.xmg.p2p.base.domain.LoginInfo"  columnPrefix="ap_">
+          <id property="id" column="id"/>
+          <result property="username" column="username"/>
+      </association>
+      <association property="auditor" javaType="com.xmg.p2p.base.domain.LoginInfo" columnPrefix="au_">
+          <id  property="id" column="id"/>
+          <result property="username" column="username"/>
+      </association>
+  </resultMap>
+  <insert id="insert" parameterType="com.xmg.p2p.base.domain.VideoAuth" useGeneratedKeys="true" keyProperty="id" >
+    insert into videoAuth 
+    (state,applyTime,auditor_id,remark,auditTime,applier_id)
+    values 
+    (#{state},#{applyTime},#{auditor.id},#{remark},#{auditTime},#{applier.id})
+  </insert>
+  <update id="updateByPrimaryKey" parameterType="com.xmg.p2p.base.domain.VideoAuth" >
+    update videoAuth
+    set
+	    state=#{state},
+	    applyTime=#{applyTime},
+	    auditor_id=#{auditor.id},
+	    remark=#{remark},
+	    auditTime=#{auditTime},
+	    applier_id=#{applier.id}
+    where id = #{id}
+  </update>
+  <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="long" >
+      select  va.id,va.state,va.applyTime,va.auditor_id,va.remark,va.auditTime,va.applier_id,
+      ap.id ap_id, ap.username ap_username,
+      au.id au_id,au.username au_username
+      from videoAuth va
+      left join logininfo ap on va.applier_id= ap.id
+      left join logininfo au on va.auditor_id =au.id
+      where va.id = #{id}
+  </select>
+  <sql id="conditionSql">
+  	<where>
+        <if test="beginDate!=null">
+            and va.applyTime >=#{beginDate}
+        </if>
+        <if test="endDate!=null">
+            and va.applyTime &lt;#{endDate}
+        </if>
+        <if test="state>-1">
+            and va.state=#{state}
+        </if>
+  	</where>
+  </sql>
+  <select id="queryPageCount" resultType="long">
+  	select count(0) from videoAuth va
+  	<include refid="conditionSql"/>
+  </select>
+  <select id="queryPageData" resultMap="BaseResultMap">
+     select va.id,va.state,va.applyTime,va.auditor_id,va.remark,va.auditTime,va.applier_id,
+      ap.id ap_id, ap.username ap_username,
+      au.id au_id,au.username au_username
+      from videoAuth va
+      left join logininfo ap on va.applier_id= ap.id
+      left join logininfo au on va.auditor_id =au.id
+  	<include refid="conditionSql"/>
+  	limit #{start},#{pageSize}
+  </select>
+</mapper>

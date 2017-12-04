@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.xmg.p2p.business.mapper.BidRequestAuditHistoryMapper" >
+  <resultMap id="BaseResultMap" type="com.xmg.p2p.business.domain.BidRequestAuditHistory" >
+    <id column="id" property="id"  />
+	<result column="auditType" property="auditType"  />
+	<result column="remark" property="remark"  />
+	<result column="auditTime" property="auditTime"  />
+	<result column="state" property="state"  />
+	<result column="applyTime" property="applyTime"  />
+	<result column="bidRequestId" property="bidRequestId"  />
+      <association property="applier" javaType="com.xmg.p2p.base.domain.LoginInfo"  columnPrefix="ap_">
+          <id property="id" column="id"/>
+          <result property="username" column="username"/>
+      </association>
+      <association property="auditor" javaType="com.xmg.p2p.base.domain.LoginInfo" columnPrefix="au_">
+          <id  property="id" column="id"/>
+          <result property="username" column="username"/>
+      </association>
+  </resultMap>
+  <insert id="insert" parameterType="com.xmg.p2p.business.domain.BidRequestAuditHistory" useGeneratedKeys="true" keyProperty="id" >
+    insert into bidRequestAuditHistory 
+    (auditType,auditor_id,remark,auditTime,state,applyTime,bidRequestId,applier_id)
+    values 
+    (#{auditType},#{auditor.id},#{remark},#{auditTime},#{state},#{applyTime},#{bidRequestId},#{applier.id})
+  </insert>
+  <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="long" >
+    select
+      brah.id,brah.auditType,brah.auditor_id,brah.remark,brah.auditTime,brah.state,brah.applyTime,brah.bidRequestId,
+      brah.applier_id,
+      ap.id ap_id,ap.username ap_username,
+      au.id au_id,au.username au_username
+      from bidRequestAuditHistory brah
+      left join logininfo ap on brah.applier_id= ap.id
+      left join logininfo au on brah.auditor_id =au.id
+      where id = #{id}
+  </select>
+  <sql id="conditionSql">
+  	<where>
+  	</where>
+  </sql>
+  <select id="queryPageCount" resultType="long">
+  	select count(0) from bidRequestAuditHistory brah
+  	<include refid="conditionSql"/>
+  </select>
+  <select id="queryPageData" resultMap="BaseResultMap">
+  	select
+          brah.id,brah.auditType,brah.auditor_id,brah.remark,brah.auditTime,brah.state,brah.applyTime,brah.bidRequestId,
+          brah.applier_id,
+          ap.id ap_id,ap.username ap_username,
+          au.id au_id,au.username au_username
+          from bidRequestAuditHistory brah
+          left join logininfo ap on brah.applier_id= ap.id
+          left join logininfo au on brah.auditor_id =au.id
+      from bidRequestAuditHistory brah
+  	<include refid="conditionSql"/>
+  	limit #{start},#{pageSize}
+  </select>
+    <select id="queryListByRequest" resultMap="BaseResultMap">
+         select
+      brah.id,brah.auditType,brah.auditor_id,brah.remark,brah.auditTime,brah.state,brah.applyTime,brah.bidRequestId,
+      brah.applier_id,
+      ap.id ap_id,ap.username ap_username,
+      au.id au_id,au.username au_username
+      from bidRequestAuditHistory brah
+      left join logininfo ap on brah.applier_id= ap.id
+      left join logininfo au on brah.auditor_id =au.id
+      where brah.bidRequestId = #{bidRequestId}
+    </select>
+</mapper>

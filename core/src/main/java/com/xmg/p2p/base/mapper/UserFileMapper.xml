@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.xmg.p2p.base.mapper.UserFileMapper">
+    <resultMap id="BaseResultMap" type="com.xmg.p2p.base.domain.UserFile">
+        <id column="id" property="id"/>
+        <result column="remark" property="remark"/>
+        <result column="auditTime" property="auditTime"/>
+        <result column="score" property="score"/>
+        <result column="state" property="state"/>
+        <result column="applyTime" property="applyTime"/>
+        <result column="image" property="image"/>
+        <association property="applier" javaType="com.xmg.p2p.base.domain.LoginInfo" columnPrefix="ap_">
+            <id property="id" column="id"/>
+            <result property="username" column="username"/>
+        </association>
+        <association property="auditor" javaType="com.xmg.p2p.base.domain.LoginInfo" columnPrefix="ad_">
+            <id property="id" column="id"/>
+            <result property="username" column="username"/>
+        </association>
+        <association property="fileType" column="fileType_id" javaType="com.xmg.p2p.base.domain.SystemDictionaryItem"
+                     select="com.xmg.p2p.base.mapper.SystemDictionaryItemMapper.selectByPrimaryKey"/>
+    </resultMap>
+    <insert id="insert" parameterType="com.xmg.p2p.base.domain.UserFile" useGeneratedKeys="true" keyProperty="id">
+        insert into userFile
+        (fileType_id,auditor_id,remark,auditTime,score,state,applyTime,image,applier_id)
+        values
+        (#{fileType.id},#{auditor.id},#{remark},#{auditTime},#{score},#{state},#{applyTime},#{image},#{applier.id})
+    </insert>
+    <update id="updateByPrimaryKey" parameterType="com.xmg.p2p.base.domain.UserFile">
+        update userFile
+        set
+        fileType_id=#{fileType.id},
+        auditor_id=#{auditor.id},
+        remark=#{remark},
+        auditTime=#{auditTime},
+        score=#{score},
+        state=#{state},
+        applyTime=#{applyTime},
+        image=#{image},
+        applier_id=#{applier.id}
+        where id = #{id}
+    </update>
+    <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="long">
+        select
+        uf.id,uf.fileType_id, uf.auditor_id, uf.remark, uf.auditTime, uf.score, uf.state, uf.applyTime, uf.image,
+        uf.applier_id,
+        ap.id ap_id,ap.username ap_username,
+        ad.id ad_id,ad.username ad_username
+        from userFile as uf
+        left join logininfo as ap
+        on uf.applier_id =ap.id
+        left join logininfo as ad
+        on uf.auditor_id=ad.id
+        where uf.id = #{id}
+    </select>
+    <sql id="conditionSql">
+        <where>
+            <if test="beginDate!=null">
+                and uf.applyTime >=#{beginDate}
+            </if>
+            <if test="endDate!=null">
+                and uf.applyTime &lt;#{endDate}
+            </if>
+            <if test="state>-1">
+                and uf.state=#{state}
+            </if>
+        </where>
+    </sql>
+    <select id="queryPageCount" resultType="long">
+        select count(0) from userFile uf
+        <include refid="conditionSql"/>
+    </select>
+    <select id="queryPageData" resultMap="BaseResultMap">
+        select
+        uf.id,
+        uf.fileType_id, uf.auditor_id, uf.remark, uf.auditTime, uf.score, uf.state, uf.applyTime, uf.image,
+        uf.applier_id,
+        ap.id ap_id,ap.username ap_username,
+        ad.id ad_id,ad.username ad_username
+        from userFile as uf
+        left join logininfo as ap
+        on uf.applier_id =ap.id
+        left join logininfo as ad
+        on uf.auditor_id=ad.id
+        <include refid="conditionSql"/>
+        limit #{start},#{pageSize}
+    </select>
+    <select id="selectFileTypeList" resultMap="BaseResultMap">
+        select
+        uf.id,uf.fileType_id, uf.auditor_id, uf.remark, uf.auditTime, uf.score, uf.state, uf.applyTime, uf.image,
+        uf.applier_id,
+        ap.id ap_id,ap.username ap_username,
+        ad.id ad_id,ad.username ad_username
+        from userFile as uf
+        left join logininfo as ap
+        on uf.applier_id =ap.id
+        left join logininfo as ad
+        on uf.auditor_id=ad.id
+        where uf.applier_id = #{id}
+        <if test="isFileType">
+            and fileType_id is not null
+        </if>
+        <if test="!isFileType">
+            and fileType_id is null
+        </if>
+    </select>
+    <select id="queryAuditListByLoginInfo" resultMap="BaseResultMap">
+        select
+        uf.id,uf.fileType_id, uf.auditor_id, uf.remark, uf.auditTime, uf.score, uf.state, uf.applyTime, uf.image,
+        uf.applier_id,
+        ap.id ap_id,ap.username ap_username,
+        ad.id ad_id,ad.username ad_username
+        from userFile as uf
+        left join logininfo as ap
+        on uf.applier_id =ap.id
+        left join logininfo as ad
+        on uf.auditor_id=ad.id
+        where uf.applier_id = #{loginInfoId} and uf.state=#{state}
+    </select>
+</mapper>

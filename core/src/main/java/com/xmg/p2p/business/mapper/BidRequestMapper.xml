@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.xmg.p2p.business.mapper.BidRequestMapper" >
+  <resultMap id="BaseResultMap" type="com.xmg.p2p.business.domain.BidRequest" >
+    <id column="id" property="id"  />
+	<result column="publishTime" property="publishTime"  />
+	<result column="disableDays" property="disableDays"  />
+	<result column="applyTime" property="applyTime"  />
+	<result column="bidRequestState" property="bidRequestState"  />
+	<result column="totalRewardAmount" property="totalRewardAmount"  />
+	<result column="returnType" property="returnType"  />
+	<result column="version" property="version"  />
+	<result column="currentRate" property="currentRate"  />
+	<result column="title" property="title"  />
+	<result column="disableDate" property="disableDate"  />
+	<result column="bidRequestType" property="bidRequestType"  />
+	<result column="description" property="description"  />
+	<result column="bidRequestAmount" property="bidRequestAmount"  />
+	<result column="minBidAmount" property="minBidAmount"  />
+	<result column="bidCount" property="bidCount"  />
+	<result column="monthes2Return" property="monthes2Return"  />
+	<result column="currentSum" property="currentSum"  />
+	<result column="note" property="note"  />
+	  <association property="createUser" javaType="com.xmg.p2p.base.domain.LoginInfo" columnPrefix="cu_">
+		  <id column="id" property="id"/>
+		  <result column="username" property="username"/>
+	  </association>
+	  <collection property="bids" ofType="com.xmg.p2p.business.domain.Bid" column="id"
+				  select="com.xmg.p2p.business.mapper.BidMapper.selectByBidRequestId"/>
+  </resultMap>
+  <insert id="insert" parameterType="com.xmg.p2p.business.domain.BidRequest" useGeneratedKeys="true" keyProperty="id" >
+    insert into bidRequest 
+    (publishTime,disableDays,applyTime,bidRequestState,totalRewardAmount,returnType,version,
+	  currentRate,createUser_id,title,disableDate,bidRequestType,description,bidRequestAmount,minBidAmount,
+	  bidCount,monthes2Return,currentSum,note)
+    values 
+    (#{publishTime},#{disableDays},#{applyTime},#{bidRequestState},#{totalRewardAmount},#{returnType},#{version},
+	  #{currentRate},#{createUser.id},#{title},#{disableDate},#{bidRequestType},#{description},#{bidRequestAmount},#{minBidAmount},
+	  #{bidCount},#{monthes2Return},#{currentSum},#{note})
+  </insert>
+  <update id="updateByPrimaryKey" parameterType="com.xmg.p2p.business.domain.BidRequest" >
+    update bidRequest
+    set
+	    publishTime=#{publishTime},
+	    disableDays=#{disableDays},
+	    applyTime=#{applyTime},
+	    bidRequestState=#{bidRequestState},
+	    totalRewardAmount=#{totalRewardAmount},
+	    returnType=#{returnType},
+	    version=#{version}+1,
+	    currentRate=#{currentRate},
+	    createUser_id=#{createUser.id},
+	    title=#{title},
+	    disableDate=#{disableDate},
+	    bidRequestType=#{bidRequestType},
+	    description=#{description},
+	    bidRequestAmount=#{bidRequestAmount},
+	    minBidAmount=#{minBidAmount},
+	    bidCount=#{bidCount},
+	    monthes2Return=#{monthes2Return},
+	    currentSum=#{currentSum},
+	    note=#{note}
+    where id = #{id} and version=#{version}
+  </update>
+  <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="long" >
+    select
+	  bq.id,bq.publishTime,bq.disableDays,bq.applyTime,bq.bidRequestState,bq.totalRewardAmount,bq.returnType,bq.version,
+	  bq.currentRate,bq.createUser_id,bq.title,bq.disableDate,bq.bidRequestType,bq.description,bq.bidRequestAmount,bq.minBidAmount,
+	  bq.bidCount,bq.monthes2Return,bq.currentSum,bq.note,
+	  cu.id cu_id,cu.username cu_username
+	  from bidRequest bq join logininfo cu
+	  on bq.createUser_id=cu.id
+	  where bq.id = #{id}
+  </select>
+  <sql id="conditionSql">
+  	<where>
+		<if test="bidRequestState>-1">
+			AND bq.bidRequestState=#{bidRequestState}
+		</if>
+		<if test="states!=null">
+			and bq.bidRequestState in
+			<foreach collection="states" open="(" item="item" separator="," close=")">
+				#{item}
+			</foreach>
+		</if>
+		<if test="bidRequestType >-1">
+			and bq.bidRequestType=#{bidRequestType}
+		</if>
+		<if test="endDate!=null">
+			and #{endDate} >=bq.publishTime
+		</if>
+		<if test="beginDate!=null">
+			and bq.publishTimebq >= #{beginDate}
+		</if>
+  	</where>
+  </sql>
+  <select id="queryPageCount" resultType="long">
+  	select count(0) from bidRequest bq
+  	<include refid="conditionSql"/>
+  </select>
+  <select id="queryPageData" resultMap="BaseResultMap">
+	  select
+	  bq.id,bq.publishTime,bq.disableDays,bq.applyTime,bq.bidRequestState,bq.totalRewardAmount,bq.returnType,bq.version,
+	  bq.currentRate,bq.createUser_id,bq.title,bq.disableDate,bq.bidRequestType,bq.description,bq.bidRequestAmount,bq.minBidAmount,
+	  bq.bidCount,bq.monthes2Return,bq.currentSum,bq.note,
+	  cu.id cu_id,cu.username cu_username
+	  from bidRequest bq join logininfo cu
+	  on bq.createUser_id=cu.id
+  	<include refid="conditionSql"/>
+	  <if test="orderByType!=null">
+		  order by ${orderByType}
+	  </if>
+  	limit #{start},#{pageSize}
+  </select>
+</mapper>

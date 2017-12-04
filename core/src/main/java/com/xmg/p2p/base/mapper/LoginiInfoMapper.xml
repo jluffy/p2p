@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.xmg.p2p.base.mapper.LoginInfoMapper">
+    <resultMap id="BaseResultMap" type="com.xmg.p2p.base.domain.LoginInfo">
+        <id column="id" property="id" jdbcType="BIGINT"/>
+        <result column="username" property="username"/>
+        <result column="password" property="password"/>
+        <result column="usertype" property="userType"/>
+        <result column="state" property="state"/>
+    </resultMap>
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        insert into `LoginInfo` (username, password, state,usertype
+        )
+        values (#{username}, #{password}, #{state},#{userType}
+        )
+    </insert>
+    <update id="updateByPrimaryKey">
+        update `LoginInfo`
+        set username = #{username},
+        password = #{password},
+        state = #{state},
+        usertype=#{userType}
+        where id = #{id}
+    </update>
+    <select id="selectByPrimaryKey" resultMap="BaseResultMap">
+        select id, username, password, state,usertype
+        from `LoginInfo`
+        where id = #{id}
+    </select>
+    <select id="queryByUsername" resultType="int">
+        select count(id) from logininfo where username=#{username}
+    </select>
+    <select id="selectByNameAndPassword" resultMap="BaseResultMap">
+        select id,username,password,state,usertype from logininfo where username=#{username} AND password=#{password}
+        and usertype=#{userType}
+    </select>
+    <select id="selectByType" resultType="int">
+        select count(id) from logininfo  where  usertype=#{userType}
+    </select>
+    <select id="autoComplate" resultMap="BaseResultMap">
+        select id,username from logininfo where username like concat(#{keyword},'%')
+    </select>
+</mapper>

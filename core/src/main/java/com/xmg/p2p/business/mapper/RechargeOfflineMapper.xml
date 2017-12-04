@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.xmg.p2p.business.mapper.RechargeOfflineMapper" >
+  <resultMap id="BaseResultMap" type="com.xmg.p2p.business.domain.RechargeOffline" >
+    <id column="id" property="id"  />
+	<result column="amount" property="amount"  />
+	<result column="remark" property="remark"  />
+	<result column="tradeTime" property="tradeTime"  />
+	<result column="auditTime" property="auditTime"  />
+	<result column="state" property="state"  />
+	<result column="applyTime" property="applyTime"  />
+	<result column="note" property="note"  />
+	<result column="tradeCode" property="tradeCode"  />
+	  <association property="applier" javaType="com.xmg.p2p.base.domain.LoginInfo" columnPrefix="ap_">
+		  <id property="id" column="id"/>
+		  <result property="username" column="username"/>
+	  </association>
+	  <association property="auditor" javaType="com.xmg.p2p.base.domain.LoginInfo" columnPrefix="au_">
+		  <id property="id" column="id"/>
+		  <result property="username" column="username"/>
+	  </association>
+	  <association property="bankInfo" javaType="com.xmg.p2p.business.domain.PlatformBankInfo" columnPrefix="pb_">
+		  <id property="id" column="id"/>
+		  <result property="accountName" column="accountName"/>
+		  <result property="accountNumber" column="accountNumber"/>
+		  <result property="bankForkName" column="bankForkName"/>
+		  <result property="bankName" column="bankName"/>
+	  </association>
+  </resultMap>
+  <insert id="insert" parameterType="com.xmg.p2p.business.domain.RechargeOffline" useGeneratedKeys="true" keyProperty="id" >
+    insert into rechargeOffline 
+    (amount,bankInfo_id,auditor_id,remark,tradeTime,auditTime,state,applyTime,note,applier_id,tradeCode)
+    values 
+    (#{amount},#{bankInfo.id},#{auditor.id},#{remark},#{tradeTime},#{auditTime},#{state},#{applyTime},#{note},#{applier.id},#{tradeCode})
+  </insert>
+  <update id="updateByPrimaryKey" parameterType="com.xmg.p2p.business.domain.RechargeOffline" >
+    update rechargeOffline
+    set
+	    amount=#{amount},
+	    bankInfo_id=#{bankInfo.id},
+	    auditor_id=#{auditor.id},
+	    remark=#{remark},
+	    tradeTime=#{tradeTime},
+	    auditTime=#{auditTime},
+	    state=#{state},
+	    applyTime=#{applyTime},
+	    note=#{note},
+	    applier_id=#{applier.id},
+	    tradeCode=#{tradeCode}
+    where id = #{id}
+  </update>
+  <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="long" >
+    select
+	  ro.id,ro.amount,ro.bankInfo_id,ro.auditor_id,ro.remark,ro.tradeTime,ro.auditTime,ro.state,
+	  ro.applyTime,ro.note,ro.applier_id,ro.tradeCode,
+	  ap.id ap_id,ap.username ap_username,
+	  au.id au_id,au.username au_username,
+	  pb.id pb_id ,pb.accountName pb_accountName,pb.accountNumber pb_accountNumber,
+	  pb.bankForkName pb_bankForkName,pb.bankName pb_bankName
+	  from rechargeOffline ro
+	  left join logininfo ap on ro.applier_id=ap.id
+	  left join logininfo au on ro.auditor_id=au.id
+	  left join PlatformBankInfo pb on ro.bankInfo_id=pb.id
+	  where ro.id = #{id}
+  </select>
+  <sql id="conditionSql">
+  	<where>
+  	</where>
+  </sql>
+  <select id="queryPageCount" resultType="long">
+  	select count(0) from rechargeOffline ro
+  	<include refid="conditionSql"/>
+  </select>
+  <select id="queryPageData" resultMap="BaseResultMap">
+	  select
+	  ro.id,ro.amount,ro.bankInfo_id,ro.auditor_id,ro.remark,ro.tradeTime,ro.auditTime,ro.state,
+	  ro.applyTime,ro.note,ro.applier_id,ro.tradeCode,
+	  ap.id ap_id,ap.username ap_username,
+	  au.id au_id,au.username au_username,
+	  pb.id pb_id,
+	  pb.accountName pb_accountName,pb.accountNumber pb_accountNumber,
+	  pb.bankForkName pb_bankForkName,pb.bankName pb_bankName
+	  from rechargeOffline ro
+	  left join logininfo ap on ro.applier_id=ap.id
+	  left join logininfo au on ro.auditor_id=au.id
+	  left join PlatformBankInfo pb on ro.bankInfo_id=pb.id
+  	<include refid="conditionSql"/>
+  	limit #{start},#{pageSize}
+  </select>
+
+</mapper>

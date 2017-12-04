@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.xmg.p2p.base.mapper.IpLogMapper">
+    <resultMap id="BaseResultMap" type="com.xmg.p2p.base.domain.IpLog">
+        <id column="id" property="id"/>
+        <result column="state" property="state"/>
+        <result column="loginTime" property="loginTime"/>
+        <result column="usertype" property="userType"/>
+        <result column="username" property="username"/>
+        <result column="ip" property="ip"/>
+    </resultMap>
+    <insert id="insert" parameterType="com.xmg.p2p.base.domain.IpLog" useGeneratedKeys="true" keyProperty="id">
+        insert into ipLog
+        (state,loginTime,username,ip,usertype)
+        values
+        (#{state},#{loginTime},#{username},#{ip},#{userType})
+    </insert>
+    <sql id="conditionSql">
+        <where>
+            <if test="currentUser!=null">
+                and username=#{currentUser}
+            </if>
+            <if test="beginDate!=null">
+                and loginTime >=#{beginDate}
+            </if>
+            <if test="endDate!=null">
+                and loginTime &lt;#{endDate}
+            </if>
+            <if test="state>-1">
+                and state=#{state}
+            </if>
+            <if test="userType>-1">
+                and userTyPE=#{userType}
+            </if>
+            <if test="username!=null">
+                and username like concat("%",#{username},"%")
+            </if>
+        </where>
+    </sql>
+    <select id="queryPageCount" resultType="long">
+        select count(*) from ipLog
+        <include refid="conditionSql"/>
+    </select>
+    <select id="queryPageData" resultMap="BaseResultMap">
+        select * from ipLog
+        <include refid="conditionSql"/>
+        order by loginTime desc
+        limit #{start},#{pageSize}
+    </select>
+</mapper>

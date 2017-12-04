@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.xmg.p2p.base.mapper.AccountMapper" >
+  <resultMap id="BaseResultMap" type="com.xmg.p2p.base.domain.Account" >
+    <id column="id" property="id"  />
+	<result column="unReturnAmount" property="unReturnAmount"  />
+	<result column="unReceiveInterest" property="unReceiveInterest"  />
+	<result column="tradePassword" property="tradePassword"  />
+	<result column="remainBorrowLimit" property="remainBorrowLimit"  />
+	<result column="usableAmount" property="usableAmount"  />
+	<result column="borrowLimit" property="borrowLimit"  />
+	<result column="freezedAmount" property="freezedAmount"  />
+	<result column="unReceivePrincipal" property="unReceivePrincipal"  />
+	<result column="version" property="version"  />
+  </resultMap>
+	<!--账户的id取自LoginInfo的id 所以不需要主键自增长-->
+  <insert id="insert">
+    insert into account 
+    (id,unReturnAmount,unReceiveInterest,tradePassword,remainBorrowLimit,usableAmount,borrowLimit,freezedAmount,unReceivePrincipal,version)
+    values 
+    (#{id},#{unReturnAmount},#{unReceiveInterest},#{tradePassword},#{remainBorrowLimit},#{usableAmount},#{borrowLimit},#{freezedAmount},#{unReceivePrincipal},#{version})
+  </insert>
+  <update id="updateByPrimaryKey" parameterType="com.xmg.p2p.base.domain.Account" >
+    update account
+    set
+	    unReturnAmount=#{unReturnAmount},
+	    unReceiveInterest=#{unReceiveInterest},
+	    tradePassword=#{tradePassword},
+	    remainBorrowLimit=#{remainBorrowLimit},
+	    usableAmount=#{usableAmount},
+	    borrowLimit=#{borrowLimit},
+	    freezedAmount=#{freezedAmount},
+	    unReceivePrincipal=#{unReceivePrincipal},
+	    version=#{version}+1
+    where id = #{id} and version=#{version}
+	  <!--加多一个判断version的条件 乐观锁的原理所在-->
+  </update>
+  <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="long" >
+    select * from account where id = #{id}
+  </select>
+  <sql id="conditionSql">
+  	<where>
+  	</where>
+  </sql>
+</mapper>
